@@ -1,0 +1,15 @@
+# Compiled executables
+game
+
+# Object files
+*.o
+
+# macOS debug files
+*.dSYM/
+
+# IDE/project files (optional)
+*.sublime-workspace
+*.sublime-project
+
+# macOS metadata
+.DS_Store
