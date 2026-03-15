@@ -43,6 +43,7 @@ Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 12, 4, 4};
 
 void drawline(void);
 void PaddleCollision(Ball *ball, Paddle *paddle, int);
+void ResetGame(void);
 
 
 int main(void)
@@ -60,7 +61,7 @@ int main(void)
 	    ClearBackground(BLACK);
 
 	    if (state == STATE_MENU){
-	        DrawText("pong in C", 350, 50, 20, WHITE);
+	        DrawText("pong in C", 320, 50, 40, WHITE);
 	        DrawText("Press Space to play!", 300, 200, 20, WHITE);
 	        
 	        if(IsKeyPressed(KEY_SPACE)){  
@@ -141,27 +142,14 @@ int main(void)
 		    DrawText("Press Escape to quit", 320, 500, 15, GRAY);
 
 		    if (IsKeyPressed(KEY_SPACE)){
+
 		        // reset everything and go back to menu
-		        leftScore = 0;
-		        rightScore = 0;
-		        ball.x = SCREENWIDTH/2.0f;
-		        ball.y = SCREENHEIGHT/2.0f;
-		        ball.speedX = 4;
-		        ball.speedY = 4;
-		        leftpaddle.y = 200;
-		        rightpaddle.y = 200;
-		        state = STATE_PLAYING;
+		       ResetGame();
+		       state = STATE_PLAYING;
 		    }
 
 		    else if (IsKeyPressed(KEY_R)){
-		    	leftScore = 0;
-		        rightScore = 0;
-		        ball.x = SCREENWIDTH/2.0f;
-		        ball.y = SCREENHEIGHT/2.0f;
-		        ball.speedX = 4;
-		        ball.speedY = 4;
-		        leftpaddle.y = 200;
-		        rightpaddle.y = 200;
+		    	ResetGame();
 		        state = STATE_MENU;
 		    }
 		}
@@ -200,5 +188,15 @@ void PaddleCollision(Ball *ball, Paddle *paddle, int direction){
     	}
 }
 
+void ResetGame(void){
+    leftScore = 0;
+    rightScore = 0;
+    ball.x = SCREENWIDTH/2.0f;
+    ball.y = SCREENHEIGHT/2.0f;
+    ball.speedX = 4;
+    ball.speedY = 4;
+    leftpaddle.y = 200;
+    rightpaddle.y = 200;
 
+}
 
