@@ -56,7 +56,7 @@ void ResetBall(Ball *ball);
 
 void DrawScreen(void);
 void DrawWinScreen(void);
-void DrawMenu(void);
+void DrawMainMenu(void);
 
 void UpdateGame(void);
 void UpdateMenu(void);
@@ -92,20 +92,17 @@ int main()
 			case STATE_PLAYING:
 				UpdateGame();
 				break;
-
-			case STATE_WIN:
-				break;
 		}
 
 
 		BeginDrawing();
 	    ClearBackground(BLACK);
-	    
+
 	    //draw game
 	    switch(state){
 
 		    case STATE_MENU:
-		    	DrawMenu();
+		    	DrawMainMenu();
 		    	break;
 
 		    case STATE_PLAYING:
@@ -204,7 +201,6 @@ void DrawScreen(void){
 	drawline();
 
 	DrawText(TextFormat("%d", leftScore), 150, 100, 20, GRAY); //left player's points
-	
 	DrawText(TextFormat("%d", rightScore), 650, 100, 20, GRAY); //right player's points
 
 	DrawCircle(ball.x, ball.y, ball.radius, RED );
@@ -223,7 +219,7 @@ void DrawWinScreen(void){
 	DrawText("RIGHT PLAYER WINS!", 250, 300, 30, WHITE);
 	}
 		    
-	DrawText("Press Space to restart!", 150, 350, 20, GRAY);
+	DrawText("Press Space to restart!", 280, 350, 20, GRAY);
 	DrawText("Press Escape to quit", 320, 500, 15, GRAY);
 
 	if (IsKeyPressed(KEY_SPACE)){
@@ -269,7 +265,7 @@ void UpdateGame(void){
 
 }
 
-void DrawMenu(void){
+void DrawMainMenu(void){
 	DrawText("pong in C", 320, 50, 40, WHITE);
 	DrawText("Press Space to play!", 300, 200, 20, WHITE);
 }
