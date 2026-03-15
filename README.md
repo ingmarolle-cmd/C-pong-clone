@@ -5,3 +5,5 @@
 
 # Images
 ![App Screenshot](resources/pong_game.png)
+
+![App Screenshot](resources/pong_game2.png)
