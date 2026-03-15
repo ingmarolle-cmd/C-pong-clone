@@ -2,3 +2,6 @@
 
 - Starting with creating simple game using raylib
 - Might add different projects later on
+
+# Images
+![App Screenshot](resources/pong_game.png)
