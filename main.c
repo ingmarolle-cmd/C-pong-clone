@@ -4,6 +4,7 @@
 const int SCREENWIDTH = 800;
 const int SCREENHEIGHT = 700;
 
+//gamestates
 typedef enum {
 	STATE_MENU,
 	STATE_PLAYING,
@@ -44,15 +45,17 @@ int winner = 0;
 //fn prototypes
 void drawline(void);
 void PaddleCollision(Ball *ball, Paddle *paddle, int);
+void MoveBall(void);
+void MovePaddles(void);
 void ResetBall(Ball *ball);
 void DrawToScreen(void);
 void ChooseWinner(void);
-void ResetGame(void);
+void DrawWinScreen(void);
+static void ResetGame(void);
 
 
 int main()
 {
-
 	//initialize window & sounds
 	InitWindow(SCREENWIDTH, SCREENHEIGHT, "pong");
 	InitAudioDevice();
@@ -62,9 +65,9 @@ int main()
 	Sound gainPoint = LoadSound("resources/point_up.wav");
 	Sound startGame = LoadSound("resources/start_game.wav");
 
+	//fps
 	SetTargetFPS(60);
 
-	
 	//main game loop
 	while (!WindowShouldClose()){
 
@@ -83,21 +86,15 @@ int main()
 
 		else if (state == STATE_PLAYING){
 			//ball movements
-			ball.x += ball.speedX;
-			ball.y += ball.speedY;
+			MoveBall();
 
-			//left paddle movements
-			if(IsKeyDown(KEY_W) && leftpaddle.y > 0) leftpaddle.y -= leftpaddle.speed;
-			if(IsKeyDown(KEY_S) && (leftpaddle.y + leftpaddle.height < SCREENHEIGHT)) leftpaddle.y += leftpaddle.speed;
-
-
-			//right paddle movements
-			if(IsKeyDown(KEY_UP) && rightpaddle.y > 0) rightpaddle.y -= rightpaddle.speed;
-			if(IsKeyDown(KEY_DOWN) && (rightpaddle.y +rightpaddle.height <SCREENHEIGHT)) rightpaddle.y += rightpaddle.speed;
+			//paddle movement
+			MovePaddles();
 
 			//ball collision screenborders (no collision with screensides obviously)
-			if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= SCREENHEIGHT) 
+			if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= SCREENHEIGHT){
 		    	ball.speedY *= -1; //flips direction
+			}
 
 		    //check collisions with paddles
 		    PaddleCollision(&ball, &leftpaddle, 1);
@@ -115,8 +112,6 @@ int main()
 		    	ResetBall(&ball);
 		    	leftScore += 1;	
 		    }
-
-
 		    ChooseWinner();
 
 			//draw to screen
@@ -124,41 +119,22 @@ int main()
 			}	
 
 		else if(state == STATE_WIN){
-			if (winner ==1){
-			DrawText("LEFT PLAYER WINS!", 250, 300, 30, WHITE);
-			}
-		    
-		    else if (winner == 2){
-		    DrawText("RIGHT PLAYER WINS!", 250, 300, 30, WHITE);
-			}
-		    
-
-		    DrawText("Press Space to restart or R to go to the menu", 150, 350, 20, GRAY);
-		    DrawText("Press Escape to quit", 320, 500, 15, GRAY);
-
-		    if (IsKeyPressed(KEY_SPACE)){
-
-		        // reset everything and go back to menu
-		       ResetGame();
-		       state = STATE_PLAYING;
-		    }
-
-		    else if (IsKeyPressed(KEY_R)){
-		    	ResetGame();
-		        state = STATE_MENU;
-		    }
+			DrawWinScreen();
 		}
 
 		EndDrawing();
 
 		}
-
+	UnloadSound(losePoint);
+	UnloadSound(gainPoint);
+	UnloadSound(startGame);
+	CloseAudioDevice();
 	CloseWindow();
 	
 	return 0;
 } 
 
-//draw line in the middle (kinda useless)
+//draw line in the middle
 void drawline(void){ 
 	int startposX = SCREENWIDTH /2;
 	int endposX = startposX;
@@ -168,6 +144,16 @@ void drawline(void){
 	DrawLine(startposX, startposY, endposX, endposY, color);
 
 }	
+
+void MovePaddles(){
+	//left paddle movements
+	if(IsKeyDown(KEY_W) && leftpaddle.y > 0) leftpaddle.y -= leftpaddle.speed;
+	if(IsKeyDown(KEY_S) && (leftpaddle.y + leftpaddle.height < SCREENHEIGHT)) leftpaddle.y += leftpaddle.speed;
+
+	//right paddle movements
+	if(IsKeyDown(KEY_UP) && rightpaddle.y > 0) rightpaddle.y -= rightpaddle.speed;
+	if(IsKeyDown(KEY_DOWN) && (rightpaddle.y +rightpaddle.height <SCREENHEIGHT)) rightpaddle.y += rightpaddle.speed;
+}
 
 //check paddle collision
 void PaddleCollision(Ball *ball, Paddle *paddle, int direction){
@@ -183,7 +169,8 @@ void PaddleCollision(Ball *ball, Paddle *paddle, int direction){
     	}
 }
 
-void ResetGame(void){
+//reset everything
+static void ResetGame(void){
     leftScore = 0;
     rightScore = 0;
     ball.x = SCREENWIDTH/2.0f;
@@ -194,6 +181,7 @@ void ResetGame(void){
     rightpaddle.y = 200;
 }
 
+//pick winner
 void ChooseWinner(void){
 	if (leftScore >= 10){
 		winner = 1; // left player wins
@@ -226,8 +214,28 @@ void DrawToScreen(void){
 
 }
 
+void DrawWinScreen(void){
+	if (winner ==1){
+	DrawText("LEFT PLAYER WINS!", 250, 300, 30, WHITE);
+	}
+		    
+	else if (winner == 2){
+	DrawText("RIGHT PLAYER WINS!", 250, 300, 30, WHITE);
+	}
+		    
+	DrawText("Press Space to restart!", 150, 350, 20, GRAY);
+	DrawText("Press Escape to quit", 320, 500, 15, GRAY);
 
+	if (IsKeyPressed(KEY_SPACE)){
+	ResetGame();
+	state = STATE_PLAYING;
+	}
+}
 
+void MoveBall(void){
+	ball.x += ball.speedX;
+	ball.y += ball.speedY;
+}
 
 
 
