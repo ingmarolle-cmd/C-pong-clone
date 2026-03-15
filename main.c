@@ -24,9 +24,18 @@ typedef struct {
 
 void drawline(void);
 
+void PaddleCollision(Paddle paddle, int);
+
 //scores
 int leftScore;
 int rightScore;
+
+//paddles
+Paddle leftpaddle = {50, 200, 20, 100, 5};
+Paddle rightpaddle = {730, 200, 20, 100, 5};
+
+Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 15, 3, 3};
+
 
 int main(void)
 {
@@ -35,12 +44,7 @@ int main(void)
 	InitWindow(SCREENWIDTH, SCREENHEIGHT, "pong");
 	SetTargetFPS(60);
 
-	//paddles
-	Paddle leftpaddle = {50, 200, 20, 100, 5};
-	Paddle rightpaddle = {730, 200, 20, 100, 5};
-
-	Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 15, 3, 3};
-
+	
 	//main game loop
 	while (!WindowShouldClose())
 	{
@@ -63,30 +67,21 @@ int main(void)
     		ball.speedY *= -1; //flips direction
 
     	//check collisions with paddles
-    	if (CheckCollisionCircleRec((Vector2){ball.x, ball.y},ball.radius, 
-    		(Rectangle){leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height}))
-    	{
-    		ball.speedX *= -1;
-    	}
-
-    	if(CheckCollisionCircleRec((Vector2){ball.x, ball.y}, ball.radius,
-    		(Rectangle){rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height}))
-    	{
-    		ball.speedX *= -1;
-    	}
+    	PaddleCollision(leftpaddle, 1);
+    	PaddleCollision(rightpaddle, -1);
 
     	//reset ball
     	if (ball.x - ball.radius < 0){
     		ball.x = SCREENWIDTH/2.0f;
     		ball.y = SCREENHEIGHT/2.0f;	
-    		ball.speedX *= -1;
+    		ball.speedX *= 1;
     		rightScore += 1;	
     	}
 
     	if(ball.x + ball.radius > SCREENWIDTH){
     		ball.x = SCREENWIDTH/2.0f;
     		ball.y = SCREENHEIGHT/2.0f;
-    		ball.speedX *= -1;
+    		ball.speedX *= 1;
     		leftScore += 1;	
     	}
 
@@ -127,17 +122,12 @@ void drawline(void){
 }	
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+void PaddleCollision(Paddle paddle, int direction){
+	if(CheckCollisionCircleRec((Vector2){ball.x, ball.y}, ball.radius,
+    		(Rectangle){paddle.x, paddle.y, paddle.width, paddle.height}))
+    	{	
+    		ball.x += 5 * direction; //prevent clipping
+    		ball.speedX *= -1;
+    	}
+}
 
