@@ -28,11 +28,6 @@ typedef struct {
 
 
 
-//scores
-int leftScore;
-int rightScore;
-int winner = 0;
-
 //paddles
 Paddle leftpaddle = {50, 200, 20, 100, 5};
 Paddle rightpaddle = {730, 200, 20, 100, 5};
@@ -40,17 +35,33 @@ Paddle rightpaddle = {730, 200, 20, 100, 5};
 //ball
 Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 12, 4, 4};
 
+//scores
+int leftScore;
+int rightScore;
+int winner = 0;
 
+
+//fn prototypes
 void drawline(void);
 void PaddleCollision(Ball *ball, Paddle *paddle, int);
+void ResetBall(Ball *ball);
+void DrawToScreen(void);
+void ChooseWinner(void);
 void ResetGame(void);
 
 
-int main(void)
+int main()
 {
 
-	//initialize window
+	//initialize window & sounds
 	InitWindow(SCREENWIDTH, SCREENHEIGHT, "pong");
+	InitAudioDevice();
+
+	//load sounds
+	Sound losePoint = LoadSound("resources/lose_point.wav");
+	Sound gainPoint = LoadSound("resources/point_up.wav");
+	Sound startGame = LoadSound("resources/start_game.wav");
+
 	SetTargetFPS(60);
 
 	
@@ -65,6 +76,7 @@ int main(void)
 	        DrawText("Press Space to play!", 300, 200, 20, WHITE);
 	        
 	        if(IsKeyPressed(KEY_SPACE)){  
+	        	PlaySound(startGame);
 	            state = STATE_PLAYING;
 	        }
 	    }
@@ -93,39 +105,22 @@ int main(void)
 		    	
 		    //reset ball
 		    if (ball.x - ball.radius < 0){
-		    	ball.x = SCREENWIDTH/2.0f;
-		    	ball.y = SCREENHEIGHT/2.0f;	
-		    	ball.speedX *= -1;
+		    	PlaySound(losePoint);
+		    	ResetBall(&ball);
 		    	rightScore += 1;	
 		    }
 
 		    if(ball.x + ball.radius > SCREENWIDTH){
-		    	ball.x = SCREENWIDTH/2.0f;
-		    	ball.y = SCREENHEIGHT/2.0f;
-		    	ball.speedX *= -1;
+		    	PlaySound(gainPoint);
+		    	ResetBall(&ball);
 		    	leftScore += 1;	
 		    }
-		    if (leftScore >= 10){
-		    	winner = 1; // left player wins
-		    	state = STATE_WIN;
-		    }
 
-		    else if (rightScore >= 10){
-		    	winner = 2; //right player wins
-		    	state = STATE_WIN;
-		    }
 
+		    ChooseWinner();
 
 			//draw to screen
-			drawline();
-
-			DrawText(TextFormat("%d", leftScore), 150, 100, 20, GRAY);
-			DrawText(TextFormat("%d", rightScore), 650, 100, 20, GRAY);
-
-			DrawCircle(ball.x, ball.y, ball.radius, RED );
-
-			DrawRectangle(leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height, GRAY);
-			DrawRectangle(rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height, GRAY); 	
+			DrawToScreen();		
 			}	
 
 		else if(state == STATE_WIN){
@@ -197,6 +192,49 @@ void ResetGame(void){
     ball.speedY = 4;
     leftpaddle.y = 200;
     rightpaddle.y = 200;
+}
+
+void ChooseWinner(void){
+	if (leftScore >= 10){
+		winner = 1; // left player wins
+		state = STATE_WIN;
+	}
+
+	else if (rightScore >= 10){
+		winner = 2; //right player wins
+		state = STATE_WIN;
+	}
+}
+
+void ResetBall(Ball *ball){
+    ball->x = SCREENWIDTH/2.0f;
+    ball->y = SCREENHEIGHT/2.0f;
+    ball->speedX *= -1;
+}
+
+void DrawToScreen(void){
+	drawline();
+
+	DrawText(TextFormat("%d", leftScore), 150, 100, 20, GRAY);
+	DrawText(TextFormat("%d", rightScore), 650, 100, 20, GRAY);
+
+	DrawCircle(ball.x, ball.y, ball.radius, RED );
+
+	DrawRectangle(leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height, GRAY);
+	DrawRectangle(rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height, GRAY); 
+
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
