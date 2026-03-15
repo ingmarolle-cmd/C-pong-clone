@@ -1,7 +1,4 @@
-
-#define RAYLIB_MACOS 1
 #include <raylib.h>
-#include <stdio.h>
 
 //screen dimensions
 const int SCREENWIDTH = 800;
