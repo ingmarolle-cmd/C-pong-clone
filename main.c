@@ -31,7 +31,7 @@ int rightScore;
 Paddle leftpaddle = {50, 200, 20, 100, 5};
 Paddle rightpaddle = {730, 200, 20, 100, 5};
 
-Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 15, 3, 3};
+Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 12, 4, 4};
 
 
 int main(void)
@@ -85,18 +85,18 @@ int main(void)
     	//draw to screen
 		BeginDrawing();
 
-			ClearBackground(RAYWHITE);
+			ClearBackground(BLACK);
 
 			drawline();
 
-			DrawText("pong in C", 350, 50, 20, DARKGRAY);
-			DrawText(TextFormat("%d", leftScore), 150, 100, 20, DARKGRAY);
-			DrawText(TextFormat("%d", rightScore), 650, 100, 20 ,DARKGRAY);
+			DrawText("pong in C", 350, 50, 20, WHITE);
+			DrawText(TextFormat("%d", leftScore), 150, 100, 20, GRAY);
+			DrawText(TextFormat("%d", rightScore), 650, 100, 20, GRAY);
 
-			DrawCircle(ball.x, ball.y, ball.radius, DARKBLUE );
+			DrawCircle(ball.x, ball.y, ball.radius, RED );
 
-			DrawRectangle(leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height, LIGHTGRAY);
-			DrawRectangle(rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height, LIGHTGRAY); 
+			DrawRectangle(leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height, GRAY);
+			DrawRectangle(rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height, GRAY); 
 
 
 		EndDrawing();	
@@ -112,8 +112,8 @@ void drawline(void){
 	int startposX = SCREENWIDTH /2;
 	int endposX = startposX;
 	int startposY = 0;
-	int endposY = 700;
-	Color color = {200,200,200,200};
+	int endposY = SCREENHEIGHT;
+	Color color = {0,0,0,0};
 	DrawLine(startposX, startposY, endposX, endposY, color);
 
 }	
