@@ -1,77 +1,110 @@
 
 #define RAYLIB_MACOS 1
 #include <raylib.h>
+#include <stdio.h>
+
+//screen dimensions
+const int SCREENWIDTH = 800;
+const int SCREENHEIGHT = 700;
+
+//paddles struct
+typedef struct {
+	int x, y;
+	int width, height;
+	int speed;
+} Paddle;
+
+//ball struct
+typedef struct {
+	float x,y;
+	float radius;
+	float speedX, speedY;
+} Ball;
+
+
+void drawline(void);
+
+//scores
+int leftScore;
+int rightScore;
 
 int main(void)
 {
-	const int SCREENWIDTH = 800;
-	const int SCREENHEIGHT = 700;
 
 	//initialize window
-	InitWindow(SCREENWIDTH, SCREENHEIGHT, "pong clone");
+	InitWindow(SCREENWIDTH, SCREENHEIGHT, "pong");
 	SetTargetFPS(60);
-
-
-	//position of the ball
-	Vector2 ballPos = {(float)SCREENWIDTH/2, (float)SCREENHEIGHT/2};
-
-	//paddle struct
-	typedef struct {
-		int x, y;
-		int width, height;
-		int speed;
-	} Paddle;
-
-	typedef struct {
-		float x,y;
-		float radius;
-		float speedX, speedY;
-	} Ball;
 
 	//paddles
 	Paddle leftpaddle = {50, 200, 20, 100, 5};
 	Paddle rightpaddle = {730, 200, 20, 100, 5};
 
-	Ball ball = {SCREENWIDTH/2, SCREENHEIGHT/2, 15, 3, 3};
+	Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 15, 3, 3};
 
+	//main game loop
 	while (!WindowShouldClose())
 	{
+
 		//ball movements
 		ball.x += ball.speedX;
 		ball.y += ball.speedY;
 
 		//left paddle movements
-		if(IsKeyDown(KEY_W) && leftpaddle.y > 20) leftpaddle.y -= leftpaddle.speed;
-		if(IsKeyDown(KEY_S) && leftpaddle.y < 580) leftpaddle.y += leftpaddle.speed;
+		if(IsKeyDown(KEY_W) && leftpaddle.y > 0) leftpaddle.y -= leftpaddle.speed;
+		if(IsKeyDown(KEY_S) && (leftpaddle.y + leftpaddle.height < SCREENHEIGHT)) leftpaddle.y += leftpaddle.speed;
 
 
 		//right paddle movements
-		if(IsKeyDown(KEY_UP) && rightpaddle.y > 20) rightpaddle.y -= rightpaddle.speed;
-		if(IsKeyDown(KEY_DOWN) && rightpaddle.y  < 580) rightpaddle.y += rightpaddle.speed;
+		if(IsKeyDown(KEY_UP) && rightpaddle.y > 0) rightpaddle.y -= rightpaddle.speed;
+		if(IsKeyDown(KEY_DOWN) && (rightpaddle.y +rightpaddle.height <SCREENHEIGHT)) rightpaddle.y += rightpaddle.speed;
 
-		//ball collision screenborders (no collision with sides obviously)
+		//ball collision screenborders (no collision with screensides obviously)
 		if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= SCREENHEIGHT) 
-    		ball.speedY *= -1;
+    		ball.speedY *= -1; //flips direction
 
     	//check collisions with paddles
     	if (CheckCollisionCircleRec((Vector2){ball.x, ball.y},ball.radius, 
-    		(Rectangle){leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height}) ||
-    		CheckCollisionCircleRec((Vector2){ball.x, ball.y}, ball.radius,
-    			(Rectangle){rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height}))
+    		(Rectangle){leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height}))
     	{
     		ball.speedX *= -1;
     	}
 
+    	if(CheckCollisionCircleRec((Vector2){ball.x, ball.y}, ball.radius,
+    		(Rectangle){rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height}))
+    	{
+    		ball.speedX *= -1;
+    	}
 
+    	//reset ball
+    	if (ball.x - ball.radius < 0){
+    		ball.x = SCREENWIDTH/2.0f;
+    		ball.y = SCREENHEIGHT/2.0f;	
+    		ball.speedX *= -1;
+    		rightScore += 1;	
+    	}
+
+    	if(ball.x + ball.radius > SCREENWIDTH){
+    		ball.x = SCREENWIDTH/2.0f;
+    		ball.y = SCREENHEIGHT/2.0f;
+    		ball.speedX *= -1;
+    		leftScore += 1;	
+    	}
+
+    	//draw to screen
 		BeginDrawing();
 
 			ClearBackground(RAYWHITE);
 
-			DrawText("pong in C", 350, 100, 20, DARKGRAY);
+			drawline();
 
-			DrawCircle(ball.x, ball.y, ball.radius, RED);
+			DrawText("pong in C", 350, 50, 20, DARKGRAY);
+			DrawText(TextFormat("%d", leftScore), 150, 100, 20, DARKGRAY);
+			DrawText(TextFormat("%d", rightScore), 650, 100, 20 ,DARKGRAY);
+
+			DrawCircle(ball.x, ball.y, ball.radius, DARKBLUE );
+
 			DrawRectangle(leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height, LIGHTGRAY);
-			DrawRectangle(rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height, LIGHTGRAY);
+			DrawRectangle(rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height, LIGHTGRAY); 
 
 
 		EndDrawing();	
@@ -80,6 +113,31 @@ int main(void)
 	CloseWindow();
 	
 	return 0;
-}
+} 
+
+
+void drawline(void){ 
+	int startposX = SCREENWIDTH /2;
+	int endposX = startposX;
+	int startposY = 0;
+	int endposY = 700;
+	Color color = {200,200,200,200};
+	DrawLine(startposX, startposY, endposX, endposY, color);
+
+}	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
