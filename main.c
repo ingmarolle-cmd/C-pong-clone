@@ -28,6 +28,11 @@ typedef struct {
 } Ball;
 
 
+//sounds
+Sound losePoint;
+Sound gainPoint;
+Sound startGame;
+
 
 //paddles
 Paddle leftpaddle = {50, 200, 20, 100, 5};
@@ -44,13 +49,19 @@ int winner = 0;
 
 //fn prototypes
 void drawline(void);
-void PaddleCollision(Ball *ball, Paddle *paddle, int);
+void PaddleCollision(Ball *ball, Paddle *paddle, int direction);
 void MoveBall(void);
 void MovePaddles(void);
 void ResetBall(Ball *ball);
-void DrawToScreen(void);
-void ChooseWinner(void);
+
+void DrawScreen(void);
 void DrawWinScreen(void);
+void DrawMenu(void);
+
+void UpdateGame(void);
+void UpdateMenu(void);
+
+void ChooseWinner(void);
 static void ResetGame(void);
 
 
@@ -61,9 +72,9 @@ int main()
 	InitAudioDevice();
 
 	//load sounds
-	Sound losePoint = LoadSound("resources/lose_point.wav");
-	Sound gainPoint = LoadSound("resources/point_up.wav");
-	Sound startGame = LoadSound("resources/start_game.wav");
+	losePoint = LoadSound("resources/lose_point.wav");
+	gainPoint = LoadSound("resources/point_up.wav");
+	startGame = LoadSound("resources/start_game.wav");
 
 	//fps
 	SetTargetFPS(60);
@@ -71,79 +82,57 @@ int main()
 	//main game loop
 	while (!WindowShouldClose()){
 
+		//update game
+		switch(state){
+
+			case STATE_MENU:
+				UpdateMenu();
+				break;
+
+			case STATE_PLAYING:
+				UpdateGame();
+				break;
+
+			case STATE_WIN:
+				break;
+		}
+
+
 		BeginDrawing();
 	    ClearBackground(BLACK);
+	    
+	    //draw game
+	    switch(state){
 
-	    if (state == STATE_MENU){
-	        DrawText("pong in C", 320, 50, 40, WHITE);
-	        DrawText("Press Space to play!", 300, 200, 20, WHITE);
-	        
-	        if(IsKeyPressed(KEY_SPACE)){  
-	        	PlaySound(startGame);
-	            state = STATE_PLAYING;
-	        }
+		    case STATE_MENU:
+		    	DrawMenu();
+		    	break;
+
+		    case STATE_PLAYING:
+		    	DrawScreen();
+		    	break;
+
+		    case STATE_WIN:
+		    	DrawWinScreen();
+		    	break;
 	    }
-
-		else if (state == STATE_PLAYING){
-			//ball movements
-			MoveBall();
-
-			//paddle movement
-			MovePaddles();
-
-			//ball collision screenborders (no collision with screensides obviously)
-			if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= SCREENHEIGHT){
-		    	ball.speedY *= -1; //flips direction
-			}
-
-		    //check collisions with paddles
-		    PaddleCollision(&ball, &leftpaddle, 1);
-		    PaddleCollision(&ball, &rightpaddle, -1);
-		    	
-		    //reset ball
-		    if (ball.x - ball.radius < 0){
-		    	PlaySound(losePoint);
-		    	ResetBall(&ball);
-		    	rightScore += 1;	
-		    }
-
-		    if(ball.x + ball.radius > SCREENWIDTH){
-		    	PlaySound(gainPoint);
-		    	ResetBall(&ball);
-		    	leftScore += 1;	
-		    }
-		    ChooseWinner();
-
-			//draw to screen
-			DrawToScreen();		
-			}	
-
-		else if(state == STATE_WIN){
-			DrawWinScreen();
-		}
 
 		EndDrawing();
 
 		}
+
 	UnloadSound(losePoint);
 	UnloadSound(gainPoint);
 	UnloadSound(startGame);
+
 	CloseAudioDevice();
+
 	CloseWindow();
 	
 	return 0;
 } 
 
-//draw line in the middle
-void drawline(void){ 
-	int startposX = SCREENWIDTH /2;
-	int endposX = startposX;
-	int startposY = 0;
-	int endposY = SCREENHEIGHT;
-	Color color = {255,255,255,255};
-	DrawLine(startposX, startposY, endposX, endposY, color);
 
-}	
 
 void MovePaddles(){
 	//left paddle movements
@@ -181,7 +170,7 @@ static void ResetGame(void){
     rightpaddle.y = 200;
 }
 
-//pick winner
+
 void ChooseWinner(void){
 	if (leftScore >= 10){
 		winner = 1; // left player wins
@@ -200,17 +189,28 @@ void ResetBall(Ball *ball){
     ball->speedX *= -1;
 }
 
-void DrawToScreen(void){
+//draw line in the middle
+void drawline(void){ 
+	int startposX = SCREENWIDTH /2;
+	int endposX = startposX;
+	int startposY = 0;
+	int endposY = SCREENHEIGHT;
+	Color color = {255,255,255,255};
+	DrawLine(startposX, startposY, endposX, endposY, color);
+
+}	
+
+void DrawScreen(void){
 	drawline();
 
-	DrawText(TextFormat("%d", leftScore), 150, 100, 20, GRAY);
-	DrawText(TextFormat("%d", rightScore), 650, 100, 20, GRAY);
+	DrawText(TextFormat("%d", leftScore), 150, 100, 20, GRAY); //left player's points
+	
+	DrawText(TextFormat("%d", rightScore), 650, 100, 20, GRAY); //right player's points
 
 	DrawCircle(ball.x, ball.y, ball.radius, RED );
 
 	DrawRectangle(leftpaddle.x, leftpaddle.y, leftpaddle.width, leftpaddle.height, GRAY);
 	DrawRectangle(rightpaddle.x, rightpaddle.y, rightpaddle.width, rightpaddle.height, GRAY); 
-
 
 }
 
@@ -237,12 +237,47 @@ void MoveBall(void){
 	ball.y += ball.speedY;
 }
 
+void UpdateGame(void){
+	//ball movements
+	MoveBall();
 
+	//paddle movement
+	MovePaddles();
 
+	//ball collision screenborders (no collision with screensides obviously)
+	if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= SCREENHEIGHT){
+		ball.speedY *= -1; //flips direction
+	}
 
+	//check collisions with paddles
+	PaddleCollision(&ball, &leftpaddle, 1);
+	PaddleCollision(&ball, &rightpaddle, -1);
+		    	
+	//reset ball
+	if (ball.x - ball.radius < 0){
+		PlaySound(losePoint);
+		ResetBall(&ball);
+		rightScore += 1;	
+	}
 
+	if(ball.x + ball.radius > SCREENWIDTH){
+		PlaySound(gainPoint);
+		ResetBall(&ball);
+		leftScore += 1;	
+	}
+	ChooseWinner();
 
+}
 
+void DrawMenu(void){
+	DrawText("pong in C", 320, 50, 40, WHITE);
+	DrawText("Press Space to play!", 300, 200, 20, WHITE);
+}
 
-
+void UpdateMenu(void){
+	if(IsKeyPressed(KEY_SPACE)){  
+	   PlaySound(startGame);
+	    state = STATE_PLAYING;
+	}
+}
 
