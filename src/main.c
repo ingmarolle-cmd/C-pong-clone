@@ -36,7 +36,7 @@ Sound startGame;
 
 
 //paddles
-Paddle leftpaddle = {50, 200, 20, 100, 4};
+Paddle leftpaddle = {50, 200, 20, 100, 5};
 Paddle rightpaddle = {730, 200, 20, 100, 4};
 
 //ball
@@ -94,6 +94,9 @@ int main()
 
 			case STATE_PLAYING:
 				UpdateGame();
+				break;
+
+			case STATE_WIN:
 				break;
 		}
 
