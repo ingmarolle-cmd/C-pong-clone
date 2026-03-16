@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <math.h>
 
 //screen dimensions
 const int SCREENWIDTH = 800;
@@ -35,11 +36,11 @@ Sound startGame;
 
 
 //paddles
-Paddle leftpaddle = {50, 200, 20, 100, 5};
-Paddle rightpaddle = {730, 200, 20, 100, 5};
+Paddle leftpaddle = {50, 200, 20, 100, 4};
+Paddle rightpaddle = {730, 200, 20, 100, 4};
 
 //ball
-Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 12, 4, 4};
+Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 12, 5, 5};
 
 //scores
 int leftScore;
@@ -51,8 +52,9 @@ int winner = 0;
 void drawline(void);
 void PaddleCollision(Ball *ball, Paddle *paddle, int direction);
 void MoveBall(void);
-void MovePaddles(void);
+void MovePaddle(void);
 void ResetBall(Ball *ball);
+void CpuPaddle(Paddle *paddle);
 
 void DrawScreen(void);
 void DrawWinScreen(void);
@@ -131,14 +133,13 @@ int main()
 
 
 
-void MovePaddles(){
+void MovePaddle(){
 	//left paddle movements
-	if(IsKeyDown(KEY_W) && leftpaddle.y > 0) leftpaddle.y -= leftpaddle.speed;
-	if(IsKeyDown(KEY_S) && (leftpaddle.y + leftpaddle.height < SCREENHEIGHT)) leftpaddle.y += leftpaddle.speed;
+	if(IsKeyDown(KEY_W) && leftpaddle.y > 0){ leftpaddle.y -= leftpaddle.speed;
+	}
+	if(IsKeyDown(KEY_S) && (leftpaddle.y + leftpaddle.height < SCREENHEIGHT)){ leftpaddle.y += leftpaddle.speed;
+	}
 
-	//right paddle movements
-	if(IsKeyDown(KEY_UP) && rightpaddle.y > 0) rightpaddle.y -= rightpaddle.speed;
-	if(IsKeyDown(KEY_DOWN) && (rightpaddle.y +rightpaddle.height <SCREENHEIGHT)) rightpaddle.y += rightpaddle.speed;
 }
 
 //check paddle collision
@@ -238,11 +239,18 @@ void UpdateGame(void){
 	MoveBall();
 
 	//paddle movement
-	MovePaddles();
+	MovePaddle();
+	CpuPaddle(&rightpaddle);
+	
 
 	//ball collision screenborders (no collision with screensides obviously)
-	if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= SCREENHEIGHT){
+	if (ball.y - ball.radius <= 0){
+		ball.y += 10;
 		ball.speedY *= -1; //flips direction
+	}
+	else if (ball.y + ball.radius >= SCREENHEIGHT){
+		ball.y -= 10;
+		ball.speedY *= -1;
 	}
 
 	//check collisions with paddles
@@ -277,3 +285,17 @@ void UpdateMenu(void){
 	}
 }
 
+void CpuPaddle(Paddle *paddle){
+	if (ball.speedX > 0){
+		int paddleCenter = paddle->y + paddle->height/2;
+		int deadzone = 10;
+
+		if (paddleCenter < ball.y - deadzone){
+			paddle->y += paddle->speed;
+		}
+		else if (paddleCenter > ball.y + deadzone){
+			paddle->y -= paddle->speed;
+		}
+
+	}
+}
