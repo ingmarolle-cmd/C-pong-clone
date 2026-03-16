@@ -40,12 +40,13 @@ Paddle leftpaddle = {50, 200, 20, 100, 4};
 Paddle rightpaddle = {730, 200, 20, 100, 4};
 
 //ball
-Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 12, 5, 5};
+Ball ball = {SCREENWIDTH/2.0f, SCREENHEIGHT/2.0f, 10, 6, 6};
 
 //scores
 int leftScore;
 int rightScore;
 int winner = 0;
+
 
 
 //fn prototypes
@@ -287,15 +288,16 @@ void UpdateMenu(void){
 
 void CpuPaddle(Paddle *paddle){
 	if (ball.speedX > 0){
-		int paddleCenter = paddle->y + paddle->height/2;
+		int paddleCenter = paddle->y + paddle->height/2;  //find paddle's center
 		int deadzone = 10;
 
-		if (paddleCenter < ball.y - deadzone){
+		if (paddleCenter < ball.y - deadzone && paddle->y + paddle->height < SCREENHEIGHT) { //move down if ball is lower then paddle
 			paddle->y += paddle->speed;
 		}
-		else if (paddleCenter > ball.y + deadzone){
+		else if (paddleCenter > ball.y + deadzone && paddle->y > 0){ //move up if ball is higher then paddle
 			paddle->y -= paddle->speed;
 		}
 
 	}
 }
+
