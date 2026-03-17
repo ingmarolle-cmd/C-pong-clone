@@ -1,4 +1,6 @@
 #include <raylib.h>
+#include <math.h>
+
 
 // screen dimensions
 const int SCREENWIDTH = 800;
@@ -20,7 +22,8 @@ typedef struct {
 typedef struct {
   float x, y;
   float radius;
-  float speedX, speedY;
+  float speed;
+  float dirX, dirY;
 } Ball;
 
 // sounds
@@ -33,7 +36,9 @@ Paddle leftpaddle = {50, 200, 20, 100, 5};
 Paddle rightpaddle = {730, 200, 20, 100, 4};
 
 // ball
-Ball ball = {SCREENWIDTH / 2.0f, SCREENHEIGHT / 2.0f, 10, 6, 6};
+Ball ball = {SCREENWIDTH / 2.0f, 
+            SCREENHEIGHT / 2.0f, 
+            10, 7.0f, 1.0f, 0.0f }; //radius, speed, horizontal direction, vertical direction
 
 // scores
 int leftScore;
@@ -45,6 +50,7 @@ void drawline(void);
 void PaddleCollision(Ball *ball, Paddle *paddle, int direction);
 void MoveBall(void);
 void MovePaddle(void);
+void UpdateDifficulty(int leftScore, Ball *ball);
 void ResetBall(Ball *ball);
 void CpuPaddle(Paddle *paddle);
 
@@ -142,10 +148,15 @@ void PaddleCollision(Ball *ball, Paddle *paddle, int direction) {
           (Rectangle){paddle->x, paddle->y, paddle->width, paddle->height})) {
 
     ball->x += 5 * direction; // prevent clipping
-    ball->speedX *= -1;
-    ball->speedY =
-        difference * 0.1; // sends the ball out at different angles relative to
-                          // where the ball hit the paddle
+
+    ball->dirX = direction;
+    ball->dirY = difference * 0.05f;
+    
+    // normalize dir by dividing each vector by its length (length = sqrt vec1^2 + vec2^2)
+    float directionLength = sqrtf(ball->dirX * ball->dirX  + ball->dirY * ball->dirY);
+    ball->dirX /= directionLength;
+    ball->dirY /= directionLength;
+    // not normalizing explodes the ball's speed when it hits a side
   }
 }
 
@@ -155,8 +166,9 @@ static void ResetGame(void) {
   rightScore = 0;
   ball.x = SCREENWIDTH / 2.0f;
   ball.y = SCREENHEIGHT / 2.0f;
-  ball.speedX = 4;
-  ball.speedY = 4;
+  ball.speed = 5.0f;
+  ball.dirX = 1.0f;
+  ball.dirY = 0.0f;
   leftpaddle.y = 200;
   rightpaddle.y = 200;
 }
@@ -176,7 +188,8 @@ void ChooseWinner(void) {
 void ResetBall(Ball *ball) {
   ball->x = SCREENWIDTH / 2.0f;
   ball->y = SCREENHEIGHT / 2.0f;
-  ball->speedX *= -1;
+  ball->dirX = 1;
+  ball->dirY *= 0;
 }
 
 // draw line in the middle
@@ -224,8 +237,8 @@ void DrawWinScreen(void) {
 }
 
 void MoveBall(void) {
-  ball.x += ball.speedX;
-  ball.y += ball.speedY;
+  ball.x += ball.dirX * ball.speed;
+  ball.y += ball.dirY * ball.speed;
 }
 
 void UpdateGame(void) {
@@ -239,10 +252,10 @@ void UpdateGame(void) {
   // ball collision screenborders (no collision with screensides obviously)
   if (ball.y - ball.radius <= 0) {
     ball.y += 10;
-    ball.speedY *= -1; // flips direction
+    ball.dirY *= -1; // flips direction
   } else if (ball.y + ball.radius >= SCREENHEIGHT) {
     ball.y -= 10;
-    ball.speedY *= -1;
+    ball.dirY *= -1;
   }
 
   // check collisions with paddles
@@ -260,6 +273,7 @@ void UpdateGame(void) {
     PlaySound(gainPoint);
     ResetBall(&ball);
     leftScore += 1;
+    UpdateDifficulty(leftScore, &ball);
   }
   ChooseWinner();
 }
@@ -277,17 +291,33 @@ void UpdateMenu(void) {
 }
 
 void CpuPaddle(Paddle *paddle) {
-  if (ball.speedX > 0) {
+  if (ball.dirX > 0) {
     int paddleCenter = paddle->y + paddle->height / 2; // find paddle's center
-    int deadzone = 10;
+    int deadzone = 10; // makes cpu not track the exact y value of the ball
 
     if (paddleCenter < ball.y - deadzone &&
         paddle->y + paddle->height <
             SCREENHEIGHT) { // move down if ball is lower then paddle
       paddle->y += paddle->speed;
-    } else if (paddleCenter > ball.y + deadzone &&
+    } 
+    else if (paddleCenter > ball.y + deadzone &&
                paddle->y > 0) { // move up if ball is higher then paddle
       paddle->y -= paddle->speed;
     }
   }
 }
+
+// updates difficulty based in player score
+void UpdateDifficulty(int leftScore, Ball *ball){
+  if (leftScore >= 2){
+    ball->speed += 0.5f;
+  }
+  else if (leftScore >= 5){
+    ball->speed += 0.5f;
+  }
+
+  else if (leftScore >= 8){
+    ball->speed +=1.0f;
+  }
+}
+
